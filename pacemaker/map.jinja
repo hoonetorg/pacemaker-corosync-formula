@@ -1,0 +1,26 @@
+# -*- coding: utf-8 -*-
+# vim: ft=jinja
+
+{% import_yaml 'pacemaker/defaults.yaml' as default_settings %}
+
+{% set os_family_map = salt['grains.filter_by']({
+        'Debian': {},
+        'Suse': {},
+        'Arch': {
+            "pkg" : 'pacemaker-arch',
+        },
+        'RedHat': {
+            "config": '/etc/pacemaker.conf',
+        },
+  }
+  , grain="os_family"
+  , merge=salt['pillar.get']('pacemaker:lookup'))
+%}
+{% do default_settings.pacemaker.update(os_family_map) %}
+
+{% set pacemaker = salt['pillar.get'](
+        'pacemaker',
+        default=default_settings.pacemaker,
+        merge=True
+    )
+%}
